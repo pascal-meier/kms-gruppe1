@@ -4,17 +4,21 @@
 
     <div class="cards">
       <div class="card">
-        <TodoList />
       </div>
 
       <div class="card">
         <Prio />
+      </div>
+
+      <div class="card">
+        <todo-list />
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import todoList from "./components/TodoList.vue";
 import Prio from './components/Prio.vue'
 </script>
 
