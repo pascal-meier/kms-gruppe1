@@ -1,30 +1,59 @@
-<script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
-</script>
-
 <template>
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
+  <div class="app">
+    <h1>📝 KMS ToDo App</h1>
+
+    <div class="cards">
+      <div class="card">
+        <TodoList />
+      </div>
+
+      <div class="card">
+        <Prio />
+      </div>
+    </div>
   </div>
-  <HelloWorld msg="Vite + Vue" />
 </template>
 
+<script setup>
+import Prio from './components/Prio.vue'
+</script>
+
 <style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+.app {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  padding: 2rem;
+  max-width: 1000px;
+  margin: auto;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+
+h1 {
+  text-align: center;
+  margin-bottom: 2rem;
 }
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
+
+/* 🧱 Karten-Container */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+/* 📦 einzelne Karte */
+.card {
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* 🩶 dunkler Hintergrund */
+body {
+  background: #f5f7fa;
 }
 </style>
