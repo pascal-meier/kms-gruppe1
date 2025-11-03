@@ -1,14 +1,18 @@
 import { computed, reactive } from "vue";
+import { ensureDefaultPriorities, usePriorities } from "./usePriorities";
 
 export type ID = string;
 
 export interface Task {
     title: string;
     description?: string;
-    priority: 1 | 2 | 3;   // 1=hoch, 2=mittel, 3=niedrig
+    /** ALT (Legacy): numeric priority – wird migriert */
+    priority?: 1 | 2 | 3;
+    /** NEU: referenziert eigene Prioritäten */
+    priorityId?: ID | null;
     done: boolean;
     categoryId?: ID | null;
-    updatedAt: string;     // ISO
+    updatedAt: string;
 }
 
 type TaskDict = Record<ID, Task>;
@@ -19,18 +23,28 @@ function uid(): ID {
 }
 
 function load(): TaskDict {
+    // Stelle sicher, dass es Default-Prioritäten gibt (IDs nötig für Migration)
+    const defaults = ensureDefaultPriorities();
+
     try {
         const raw = localStorage.getItem(STORAGE_KEY);
         const obj = (raw ? JSON.parse(raw) : {}) as Partial<TaskDict>;
+
         for (const id of Object.keys(obj) as ID[]) {
             const t = obj[id];
             if (!t) continue;
+
             if (typeof t.done !== "boolean") t.done = false;
-            if (t.priority !== 1 && t.priority !== 2 && t.priority !== 3) t.priority = 2;
             if (!t.updatedAt) t.updatedAt = new Date().toISOString();
             if (!("categoryId" in t)) t.categoryId = null;
-            if (typeof t.title !== "string") t.title = String(t.title ?? "").trim();
-            if (t.description != null) t.description = String(t.description).trim();
+
+            // MIGRATION: numeric priority → priorityId
+            if (!t.priorityId) {
+                if (t.priority === 1) t.priorityId = defaults.high;
+                else if (t.priority === 3) t.priorityId = defaults.low;
+                else t.priorityId = defaults.medium;
+            }
+            // Aufräumen optional: alte Zahl behalten wir vorerst für Abwärtskompatibilität
         }
         return obj as TaskDict;
     } catch {
@@ -43,31 +57,34 @@ function save(dict: TaskDict) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(dict));
 }
 
-const state = reactive<{
-    tasks: TaskDict;
-    editingId: ID | null;
-}>({
+const state = reactive<{ tasks: TaskDict; editingId: ID | null }>({
     tasks: load(),
     editingId: null,
 });
 
 export function useTasks() {
+    const { getById } = usePriorities();
+
+    // Sortierung: offen vor erledigt, dann nach Priorität.order (kleiner = wichtiger), danach updatedAt
     const entries = computed<[ID, Task][]>(() => {
         const pairs = Object.entries(state.tasks) as [ID, Task][];
         return pairs.sort(([, a], [, b]) => {
-            if (a.done !== b.done) return a.done ? 1 : -1;                // offen vor erledigt
-            if (a.priority !== b.priority) return a.priority - b.priority; // 1 vor 2 vor 3
+            if (a.done !== b.done) return a.done ? 1 : -1;
+
+            const pa = getById(a.priorityId)?.order ?? 9999;
+            const pb = getById(b.priorityId)?.order ?? 9999;
+            if (pa !== pb) return pa - pb;
+
             return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
         });
     });
 
-    function addTask(input: { title: string; description?: string; priority?: 1|2|3; categoryId?: ID | null }) {
+    function addTask(input: { title: string; description?: string; priorityId?: ID | null }) {
         const id = uid();
         state.tasks[id] = {
             title: input.title.trim(),
             description: input.description?.trim(),
-            priority: input.priority ?? 2,
-            categoryId: input.categoryId ?? null,
+            priorityId: input.priorityId ?? null,
             done: false,
             updatedAt: new Date().toISOString(),
         };
@@ -91,13 +108,5 @@ export function useTasks() {
     function setEditing(id: ID | null) { state.editingId = id; }
     function get(id: ID) { return state.tasks[id] ?? null; }
 
-    return {
-        tasksDict: state.tasks,
-        entries,
-        editingId: computed(() => state.editingId),
-        addTask,
-        updateTask,
-        get,
-        setEditing,
-    };
+    return { tasksDict: state.tasks, entries, editingId: computed(()=>state.editingId), addTask, updateTask, get, setEditing };
 }

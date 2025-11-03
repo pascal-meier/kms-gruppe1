@@ -14,10 +14,11 @@
 
     <label class="row">
       <span>Priorität</span>
-      <select v-model.number="priority">
-        <option :value="1">Hoch</option>
-        <option :value="2">Mittel</option>
-        <option :value="3">Niedrig</option>
+      <select v-model="priorityId">
+        <option :value="null">– keine –</option>
+        <option v-for="p in priorities" :key="p.id" :value="p.id">
+          {{ p.name }}
+        </option>
       </select>
     </label>
 
@@ -30,14 +31,14 @@
 
 <script setup lang="ts">
 import { computed, watch, ref } from "vue";
-import type { ID, Task } from "@/composables/useTasks";
+import type { ID, Task } from "../composable/useTasks.ts";
+import { usePriorities } from "../composable/usePriorities.ts";
 
-const props = defineProps<{
-  modelValue?: { id: ID; data: Task } | null; // gesetzt -> Edit, sonst Create
-}>();
+const { list: priorities } = usePriorities();
 
+const props = defineProps<{ modelValue?: { id: ID; data: Task } | null }>();
 const emit = defineEmits<{
-  (e: "submit", payload: { id?: ID; data: Pick<Task, "title" | "description" | "priority"> }): void;
+  (e: "submit", payload: { id?: ID; data: { title: string; description?: string; priorityId?: ID | null } }): void;
   (e: "cancel"): void;
 }>();
 
@@ -45,7 +46,7 @@ const isEdit = computed(() => !!props.modelValue);
 
 const title = ref("");
 const description = ref("");
-const priority = ref<1 | 2 | 3>(2);
+const priorityId = ref<ID | null>(null);
 
 watch(
     () => props.modelValue,
@@ -53,11 +54,11 @@ watch(
       if (val) {
         title.value = val.data.title ?? "";
         description.value = val.data.description ?? "";
-        priority.value = val.data.priority ?? 2;
+        priorityId.value = val.data.priorityId ?? null;
       } else {
         title.value = "";
         description.value = "";
-        priority.value = 2;
+        priorityId.value = null;
       }
     },
     { immediate: true }
@@ -65,16 +66,10 @@ watch(
 
 function onSubmit() {
   const payload = {
-    data: {
-      title: title.value,
-      description: description.value,
-      priority: priority.value,
-    },
-  } as { id?: ID; data: Pick<Task, "title" | "description" | "priority"> };
+    data: { title: title.value, description: description.value, priorityId: priorityId.value }
+  } as { id?: ID; data: { title: string; description?: string; priorityId?: ID | null } };
 
-  if (isEdit.value && props.modelValue) {
-    payload.id = props.modelValue.id;
-  }
+  if (isEdit.value && props.modelValue) payload.id = props.modelValue.id;
   emit("submit", payload);
 }
 </script>

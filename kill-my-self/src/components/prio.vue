@@ -1,150 +1,57 @@
 <template>
   <div class="prio">
-    <h2>🧭 Prioritäten</h2>
-
-    <form @submit.prevent="addPrio">
-      <input v-model="newKey" placeholder="Key (z.B. high)" required />
-      <input v-model="newLabel" placeholder="Label (z.B. Hoch)" required />
-      <input v-model.number="newWeight" type="number" placeholder="Wert (1=hoch)" required />
-      <button>Hinzufügen</button>
+    <form class="row" @submit.prevent="create">
+      <input v-model="name" placeholder="Name (z.B. Hoch)" required />
+      <input v-model="color" type="color" title="Farbe" />
+      <input v-model.number="order" type="number" min="1" step="1" title="Reihenfolge" />
+      <button type="submit">Anlegen</button>
     </form>
 
-    <ul>
-      <li v-for="p in priorities" :key="p.key">
-        <strong>{{ p.label }}</strong> ({{ p.key }}) – Gewichtung: {{ p.weight }}
-        <button @click="deletePrio(p.key)">🗑️</button>
+    <ul class="list">
+      <li v-for="p in list" :key="p.id" class="item">
+        <span class="swatch" :style="{ background: p.color }"></span>
+        <input v-model="p.name" @change="save(p)" />
+        <input v-model="p.color" @change="save(p)" />
+        <input v-model.number="p.order" type="number" min="1" step="1" @change="save(p)" />
+        <button class="ghost" @click="remove(p.id)">Löschen</button>
       </li>
     </ul>
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue'
+<script setup lang="ts">
+import { ref } from "vue";
+import { usePriorities } from "../composable/usePriorities";
+const { list, addPriority, updatePriority, removePriority } = usePriorities();
 
-// === Lokale Storage Keys ===
-const PRIOS_KEY = 'priorities_csv'
-const PRIO_HEADERS = ['key','label','weight']
+const name = ref("");
+const color = ref("#e5e7eb");
+const order = ref<number>( (list.value.at(-1)?.order ?? 2) + 1 );
 
-// === State ===
-const priorities = ref([])
-const newKey = ref('')
-const newLabel = ref('')
-const newWeight = ref(1)
-
-// === CSV Helpers ===
-function toCSV(rows, headers) {
-  const esc = v => {
-    const s = String(v ?? '')
-    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
-  }
-  const head = headers.join(',')
-  const body = rows.map(r => headers.map(h => esc(r[h])).join(',')).join('\n')
-  return [head, body].filter(Boolean).join('\n')
+function resetForm() {
+  name.value = "";
+  color.value = "#e5e7eb";
+  order.value = (list.value.at(-1)?.order ?? 2) + 1;
 }
-
-function parseCSVLine(line) {
-  const out = []
-  let cur = '', i = 0, inQuotes = false
-  while (i < line.length) {
-    const ch = line[i]
-    if (inQuotes) {
-      if (ch === '"') {
-        if (line[i + 1] === '"') { cur += '"'; i += 2; continue }
-        inQuotes = false; i++; continue
-      }
-      cur += ch; i++; continue
-    } else {
-      if (ch === '"') { inQuotes = true; i++; continue }
-      if (ch === ',') { out.push(cur); cur = ''; i++; continue }
-      cur += ch; i++; continue
-    }
-  }
-  out.push(cur)
-  return out
+function create() {
+  addPriority({ name: name.value, color: color.value, order: order.value });
+  resetForm();
 }
-
-function fromCSV(csv) {
-  if (!csv.trim()) return { headers: [], rows: [] }
-  const lines = csv.split(/\r?\n/)
-  const headers = parseCSVLine(lines.shift())
-  const rows = lines.filter(Boolean).map(line => {
-    const vals = parseCSVLine(line)
-    const obj = {}
-    headers.forEach((h, i) => obj[h] = vals[i] ?? '')
-    return obj
-  })
-  return { headers, rows }
+function save(p: { id: string; name: string; color?: string; order: number }) {
+  updatePriority(p.id, { name: p.name, color: p.color, order: p.order });
 }
-
-// === Load/Save ===
-function loadPriorities() {
-  const csv = localStorage.getItem(PRIOS_KEY) || ''
-  const { rows } = fromCSV(csv)
-  priorities.value = rows.map(r => ({
-    key: r.key,
-    label: r.label,
-    weight: Number(r.weight)
-  }))
+function remove(id: string) {
+  removePriority(id);
 }
-
-function savePriorities() {
-  localStorage.setItem(PRIOS_KEY, toCSV(priorities.value, PRIO_HEADERS))
-}
-
-// === Functions ===
-function addPrio() {
-  priorities.value.push({
-    key: newKey.value,
-    label: newLabel.value,
-    weight: newWeight.value
-  })
-  savePriorities()
-  newKey.value = ''
-  newLabel.value = ''
-  newWeight.value = 1
-}
-
-function deletePrio(key) {
-  priorities.value = priorities.value.filter(p => p.key !== key)
-  savePriorities()
-}
-
-onMounted(loadPriorities)
 </script>
 
 <style scoped>
-.prio {
-  padding: 1rem;
-  border: 1px solid #ddd;
-  border-radius: .5rem;
-  max-width: 400px;
-  color: #000; /* 👈 Text schwarz */
-  background-color: #fff; /* optional für bessere Lesbarkeit */
-}
-
-form {
-  display: flex;
-  flex-direction: column;
-  gap: .5rem;
-  margin-bottom: 1rem;
-}
-
-ul {
-  list-style: none;
-  padding: 0;
-}
-
-button {
-  background: #eee;
-  border: 1px solid #ccc;
-  padding: .3rem .5rem;
-  cursor: pointer;
-  border-radius: .3rem;
-  color: #000; /* 👈 Text im Button schwarz */
-}
-
-button:hover {
-  background: #ddd;
-}
+.prio { display:grid; gap:1rem; }
+.row { display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; }
+.list { display:grid; gap:.5rem; }
+.item { display:grid; grid-template-columns: auto 1fr 120px 90px auto; gap:.5rem; align-items:center; }
+.swatch { width:18px; height:18px; border:1px solid #d1d5db; border-radius:4px; }
+input[type="color"] { padding:0; height:2rem; width:120px; }
+button { padding:.4rem .6rem; border-radius:.5rem; border:1px solid #d1d5db; background:#111827; color:#fff; }
+button.ghost { background:transparent; color:#111827; }
 </style>
-
