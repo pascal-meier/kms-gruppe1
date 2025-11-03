@@ -1,0 +1,240 @@
+:root {
+    --bg: #000000;
+    --card-bg: #1a1a1a;
+    --text: #ffffff;
+    --muted: #bbbbbb;
+    --border: #333333;
+    --shadow: 0 3px 10px rgba(255, 255, 255, 0.1);
+    --shadow-hover: 0 6px 18px rgba(255, 255, 255, 0.2);
+    --radius: 16px;
+    --space: 1.5rem;
+    --focus: #2563eb;
+    --button-bg: #111827;
+}
+
+body {
+    margin: 0;
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.skip-link {
+    position: absolute;
+    left: -9999px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+.skip-link:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 0.5rem 0.75rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+}
+
+.app {
+    padding: 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+    color: var(--text);
+}
+
+.app-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+h1 {
+    margin: 0;
+    font-size: 1.8rem;
+}
+
+.cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space);
+    align-items: flex-start;
+}
+
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 1.25rem;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    outline: none;
+    flex-shrink: 0;
+    max-width: 400px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.card.tasks,
+.card.prio {
+    flex-basis: 100%;
+    text-align: left;
+    margin-right: auto;
+}
+.card.tasklist {
+    flex-grow: 1;
+    max-width: 600px;
+    text-align: left;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+    border-color: #d9dce2;
+}
+.card:focus-visible {
+    box-shadow: 0 0 0 3px var(--focus);
+}
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+.card-icon {
+    font-size: 1.5rem;
+    line-height: 1;
+}
+.card-titles {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+.card-title {
+    font-size: 1.1rem;
+    margin: 0;
+}
+.card-subtitle {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--muted);
+}
+
+.form {
+    display: grid;
+    gap: 0.75rem;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--border);
+}
+.h {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.1rem;
+}
+.row {
+    display: grid;
+    gap: 0.25rem;
+}
+.row>span {
+    font-size: 0.9rem;
+    color: var(--muted);
+}
+.actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* --- Buttons global wie prio.vue --- */
+button {
+    padding: 0.5rem 0.8rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+    background: var(--button-bg);
+    color: var(--text);
+    cursor: pointer;
+    font-weight: 600;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+button:hover {
+    border-color: var(--focus);
+    box-shadow: 0 0 5px var(--focus);
+    background: rgba(37, 99, 235, 0.1);
+}
+button:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+    background: rgba(37, 99, 235, 0.15);
+}
+/* --- Ende Buttons --- */
+
+button.ghost {
+    background: transparent;
+    color: var(--text);
+}
+
+/* Rest wie gehabt */
+.list {
+    display: grid;
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+.row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 0.75rem;
+    align-items: start;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+}
+.row.done {
+    opacity: 0.7;
+}
+.check {
+    display: flex;
+    align-items: center;
+}
+.title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.prio[data-p] {
+    font-size: 0.75rem;
+    padding: 0.1rem 0.35rem;
+    border: 1px solid var(--border);
+    border-radius: 0.35rem;
+}
+.prio[data-p='1'] { background: #fee2e2; color: #b91c1c; }
+.prio[data-p='2'] { background: #e5e7eb; color: #333; }
+.prio[data-p='3'] { background: #e0f2fe; color: #2563eb; }
+.desc { margin: 0.25rem 0 0 0; }
+.meta { color: var(--muted); }
+.acts button {
+    padding: 0.35rem 0.6rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+    background: var(--button-bg);
+    color: var(--text);
+}
+
+.left-column {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    flex: 0 0 350px;
+}
+.right-column {
+    flex: 1;
+}
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.25rem;
+  background-color: var(--card-bg);
+}

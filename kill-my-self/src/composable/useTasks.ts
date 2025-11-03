@@ -51,6 +51,8 @@ const state = reactive<{
     editingId: null,
 });
 
+
+
 export function useTasks() {
     const entries = computed<[ID, Task][]>(() => {
         const pairs = Object.entries(state.tasks) as [ID, Task][];
@@ -60,8 +62,20 @@ export function useTasks() {
             return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
         });
     });
+    
+    function clearAllTasks() {
+  state.tasks = {};                    // alle Tasks aus dem reaktiven State löschen
+  localStorage.removeItem(STORAGE_KEY); // Task-Daten im localStorage entfernen
+}
 
-    function addTask(input: { title: string; description?: string; priority?: 1|2|3; categoryId?: ID | null }) {
+
+function removeTask(id: ID) {
+  delete state.tasks[id];
+  save(state.tasks);
+}
+
+
+    function addTask(input: { title: string; description?: string; priority?: 1 | 2 | 3; categoryId?: ID | null }) {
         const id = uid();
         state.tasks[id] = {
             title: input.title.trim(),
@@ -99,5 +113,7 @@ export function useTasks() {
         updateTask,
         get,
         setEditing,
+        clearAllTasks,
+        removeTask
     };
 }
