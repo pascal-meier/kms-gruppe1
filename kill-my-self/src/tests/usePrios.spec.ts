@@ -16,7 +16,7 @@ describe('usePrios', () => {
     localStorage.removeItem(PRIOS_KEY);
 
     // dynamischer Import nach dem Reset => loadPrios() läuft jetzt
-    const { usePrios } = await import('./usePrios');
+    const { usePrios } = await import('../composable/usePrios');
     const { prios } = usePrios();
 
     expect(prios.value).toEqual([
@@ -30,7 +30,7 @@ describe('usePrios', () => {
     // Start wieder ohne CSV -> Standardwerte werden beim Import gesetzt
     localStorage.removeItem(PRIOS_KEY);
 
-    const { usePrios } = await import('./usePrios');
+    const { usePrios } = await import('../composable/usePrios');
     const { prios, addPrio } = usePrios();
 
     const newPrio = { key: 'urgent', label: 'Dringend', weight: 0 };
