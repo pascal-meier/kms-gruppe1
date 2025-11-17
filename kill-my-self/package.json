@@ -13,12 +13,18 @@
     "vue": "^3.5.22"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.1",
     "@types/node": "^24.6.0",
     "@vitejs/plugin-vue": "^6.0.1",
     "@vue/tsconfig": "^0.8.1",
+<<<<<<< HEAD
     "happy-dom": "^20.0.10",
     "jsdom": "^27.0.1",
+=======
+    "eslint": "^9.39.1",
+>>>>>>> 05d48be8bf304e63a694d10b61d28ac91113b3e9
     "typescript": "~5.9.3",
+    "typescript-eslint": "^8.46.4",
     "vite": "^7.1.7",
     "vitest": "^4.0.10",
     "vue-tsc": "^3.1.0"
