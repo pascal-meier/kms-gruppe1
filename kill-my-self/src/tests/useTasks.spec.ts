@@ -42,4 +42,16 @@ describe('useTasks', () => {
         expect(get(id)).toBeNull();
         expect(localStorage.getItem(STORAGE_KEY)).toBe(JSON.stringify({}));
     });
+
+
+    it('akzeptiert Sonderzeichen im Titel-Feld', async () => {
+        const { useTasks } = await import('../composable/useTasks');
+        const { addTask, get } = useTasks();
+
+        const title = "´!$";
+        const id = addTask({ title });
+
+        const stored = get(id);
+        expect(stored?.title).toBe(title);
+    });
 });
